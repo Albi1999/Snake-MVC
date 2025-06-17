@@ -107,10 +107,10 @@ public class MainView{
         int helpX, helpY, snakeY, snakeX;
 
         Circle c = new Circle(snake.getHead().getX() , snake.getHead().getY(), (double) GameObject.SIZE /2);
-        c.setFill(SnakePart.SNAKE_HEAD_COLOR);
+        c.setFill(ColorView.SNAKE_HEAD_COLOR);
         canvas.getChildren().add(c);
 
-        Color bodyColor = SnakePart.SNAKE_BODY_COLOR;
+        Color bodyColor = ColorView.SNAKE_BODY_COLOR;
 
         for(int i = 1; i < snake.getSize(); ++i) {
             snakeX = snake.getSnakePart(i).getX();
@@ -124,7 +124,7 @@ public class MainView{
             helpX = fruit.getX();
             helpY = fruit.getY();
             c = new Circle(helpX, helpY, (double) GameObject.SIZE / 2);
-            c.setFill(Fruit.FRUIT_COLOR);
+            c.setFill(ColorView.FRUIT_COLOR);
             canvas.getChildren().add(c);
         }
         grid.add(stack, 0, 1);
@@ -146,7 +146,7 @@ public class MainView{
         smallText.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 30));
         smallText.setFill(Color.DARKGREEN);
 
-        Circle fruit = new Circle((double) WIDTH /2 - 200, (double) HEIGHT /2 + 150, (double) GameObject.SIZE /2, Fruit.FRUIT_COLOR);
+        Circle fruit = new Circle((double) WIDTH /2 - 200, (double) HEIGHT /2 + 150, (double) GameObject.SIZE /2, ColorView.FRUIT_COLOR);
 
         text = new Text((double) WIDTH /2 - 180, (double) HEIGHT /2 + 154, "- Eat a fruit for 1 point");
         text.setFont(Font.font("verdana", FontWeight.EXTRA_BOLD, FontPosture.REGULAR, 13));
@@ -174,13 +174,5 @@ public class MainView{
         g.getChildren().addAll(smallText, largeText2, smallText2, largeText);
         scene.setRoot(g);
         stage.setScene(scene);
-    }
-
-    public Snake getSnake() {
-        return snake;
-    }
-
-    public Board getBoard() {
-        return board;
     }
 }
