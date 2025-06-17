@@ -13,4 +13,10 @@ module com.maggioli.snake {
 
     opens com.maggioli.snake to javafx.fxml;
     exports com.maggioli.snake;
+    exports com.maggioli.snake.Controller;
+    opens com.maggioli.snake.Controller to javafx.fxml;
+    exports com.maggioli.snake.Model;
+    opens com.maggioli.snake.Model to javafx.fxml;
+    exports com.maggioli.snake.View;
+    opens com.maggioli.snake.View to javafx.fxml;
 }
