@@ -21,22 +21,15 @@ public class Snake {
         setStart();
     }
 
-
-    //Set snake at starting position, at start or restart of the game
     public void setStart() {
-
-        // set starting position
         if(size == 0) {
-
             body.add(head);
             ++size;
-
             for(int i = 1; i < SIZE; ++i) {
                 addSnakePart(headX, headY + (i * GameObject.SIZE));
             }
         }
-        // if game restart
-        else {
+        else { // Game Reset
             body.clear();
             head.setX(headX);
             head.setY(headY);

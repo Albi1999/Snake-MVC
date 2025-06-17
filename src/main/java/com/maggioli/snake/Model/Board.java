@@ -12,29 +12,25 @@ public class Board {
     private static final int BWIDTH = MainView.WIDTH/GameObject.SIZE;
     private static final int BHEIGHT = MainView.HEIGHT/GameObject.SIZE;
     private final ArrayList<Fruit> fruits;
-    private int score, highScore, fruitsEaten;
+    private int score, highScore;
     private final Snake snake;
     private final SnakePart head;
     Random rand;
-    private final GameState state;
     private final ScoreView scoreView;
 
     public Board() {
         scoreView = new ScoreView();
         fruits = new ArrayList<>();
-        score = fruitsEaten = 0;
+        score = 0;
         snake = new Snake();
         rand = new Random();
         head = snake.getHead();
-        state = GameState.Started;
     }
 
-    // Check if a collision occurred, either of the snake head with its body
     public GameState checkCollision() {
         int headX, headY, helpX, helpY;
         headX = head.getX();
         headY = head.getY();
-        // checks if snake hit itself
         for(int i = 1; i < snake.getSize(); ++i) {
 
             helpX = snake.getSnakePart(i).getX();
@@ -53,7 +49,6 @@ public class Board {
         int headX, headY, foodX, foodY;
         headX = head.getX();
         headY = head.getY();
-        // check for a fruit on board
         for(int i = 0; i < fruits.size(); ++i){
 
             foodX = fruits.get(i).getX();
@@ -62,17 +57,16 @@ public class Board {
             if(foodX == headX && foodY == headY) {
                 removeFruit(i);
                 addLength();
-                ++fruitsEaten;
                 ++score;
             }
         }
     }
     
     public void updateFruit() {
-        int foodX = 0, foodY = 0;
+        int foodX, foodY;
         int []place;
 
-        if(fruits.isEmpty()) { // if there's no fruit
+        if(fruits.isEmpty()) { // if there are no fruits on the board
 
             do {
                 place = placeFruit();
@@ -87,10 +81,7 @@ public class Board {
     private int[] placeFruit() {
 
         int []point = new int[2];
-
-        int helpX, helpY, foodX = 0, foodY = 0;
-        boolean helpO;
-        boolean collision = true;
+        int helpX, helpY, foodX, foodY;
 
         foodX = (rand.nextInt(BWIDTH) * GameObject.SIZE) + GameObject.SIZE / 2;
         foodY = (rand.nextInt(BHEIGHT) * GameObject.SIZE) + GameObject.SIZE / 2;
@@ -110,7 +101,7 @@ public class Board {
     }
     
     public void addFruit(int foodX, int foodY) {
-        fruits.add(new Fruit(foodX, foodY)); // add new fruit to fruit array
+        fruits.add(new Fruit(foodX, foodY));
     }
     
     public void removeFruit(int i) {
@@ -134,7 +125,7 @@ public class Board {
     private void reset() {
         snake.setStart();
         fruits.clear();
-        score = fruitsEaten = 0;
+        score = 0;
     }
 
     public ArrayList<Fruit> getFruits(){
@@ -156,9 +147,4 @@ public class Board {
     public int getHighScore() {
         return highScore;
     }
-
-    public GameState getState() {
-        return state;
-    }
-
 }

@@ -12,7 +12,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -98,10 +97,11 @@ public class MainView{
         stage.setScene(scene);
     }
 
+    // View for Running
     private void isRunning() {
 
-        grid.getChildren().clear(); // clean grid
-        canvas.getChildren().clear(); // clean canvas
+        grid.getChildren().clear();
+        canvas.getChildren().clear();
         stack = board.getScoreView().getStack();
 
         int helpX, helpY, snakeY, snakeX;
@@ -134,6 +134,7 @@ public class MainView{
         stage.setScene(scene);
     }
 
+    // View for Paused
     private void isPaused() {
 
         g = new Group();
@@ -155,6 +156,7 @@ public class MainView{
         stage.setScene(scene);
     }
 
+    // View for Finished
     private void isFinished() {
 
         g = new Group();

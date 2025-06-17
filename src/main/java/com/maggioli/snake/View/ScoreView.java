@@ -10,7 +10,7 @@ import javafx.scene.text.Font;
 public class ScoreView {
 
     private final StackPane stack;
-    private final Label score; // Label for displaying the score
+    private final Label score;
     public static final int SCORE_HEIGHT = 50;
 
     public ScoreView() {
@@ -21,29 +21,27 @@ public class ScoreView {
         Color scoreFieldColor = Color.rgb(100, 60, 100);
         r.setFill(scoreFieldColor);
 
-        // Set the position of the score panel
-        double x = (double)MainView.WIDTH;
-        double y = (double)SCORE_HEIGHT;
-        double z = (double)MainView.HEIGHT;
+        double x = MainView.WIDTH;
+        double y = SCORE_HEIGHT;
+        double z = MainView.HEIGHT;
 
         Polygon t1 = new Polygon();
-        t1.getPoints().addAll(new Double[]{
-                0.0, y+z,
-                y, y+z,
-                y, z });
+        t1.getPoints().addAll(0.0, y+z,
+                    y, y+z,
+                    y, z);
 
         Polygon t2 = new Polygon();
-        t2.getPoints().addAll(new Double[]{
-                x, y+z,
-                x-y, y+z,
-                x-y, z });
+        t2.getPoints().addAll(x, y+z,
+                    x-y, y+z,
+                    x-y, z);
 
         t1.setFill(scoreFieldColor);
         t2.setFill(scoreFieldColor);
 
+        Color scoreColor = Color.YELLOW;
+
         Label l1 = new Label("SCORE: ");
         l1.setFont(new Font(25));
-        Color scoreColor = Color.YELLOW;
         l1.setTextFill(scoreColor);
 
         score = new Label("0");
@@ -58,7 +56,7 @@ public class ScoreView {
         l3.setFont(new Font(13));
         l3.setTextFill(scoreColor);
 
-        stack.getChildren().addAll(score, r, t1, t2, l1, l2, l3);
+        stack.getChildren().addAll(r, t1, t2, l1, score, l2, l3);
         stack.getChildren().get(1).setTranslateX(-(r.getWidth()/2+ (double) SCORE_HEIGHT /2));
         stack.getChildren().get(2).setTranslateX(r.getWidth()/2+ (double) SCORE_HEIGHT /2);
         stack.getChildren().get(3).setTranslateX(-30);

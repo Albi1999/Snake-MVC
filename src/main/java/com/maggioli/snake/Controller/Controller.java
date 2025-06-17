@@ -4,9 +4,7 @@ import com.maggioli.snake.Model.*;
 import com.maggioli.snake.View.MainView;
 
 import javafx.animation.AnimationTimer;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
 public class Controller{
@@ -98,7 +96,7 @@ public class Controller{
             }
         });
 
-        scene.setOnKeyReleased(event -> {
+        scene.setOnKeyReleased(_ -> {
         });
     }
     
@@ -110,7 +108,7 @@ public class Controller{
 
             head.setX(head.getX()+(dx*GameObject.SIZE));
 
-            // check if head didn't go beyond screen, if yes set it on the other side
+            // Case when head goes too right or left on the screen
             if(head.getX() > MainView.WIDTH) {
                 head.setX(GameObject.SIZE/2);
             }
@@ -120,7 +118,7 @@ public class Controller{
 
             head.setY(head.getY()+(dy*GameObject.SIZE));
 
-            // check if head didn't go beyond screen, if yes set it on the other side
+            // Case when head goes too high or too low on the screen
             if(head.getY() > MainView.HEIGHT) {
                 if ((head.getX() != GameObject.SIZE / 2 && head.getX() != MainView.HEIGHT - GameObject.SIZE / 2) || head.getY() != MainView.HEIGHT + GameObject.SIZE / 2) {
                     head.setY(GameObject.SIZE/2);
@@ -153,19 +151,16 @@ public class Controller{
 
                 // Up
                 if(up && !down) {
-
                     dy = -1;
                     dx = 0;
                 }
                 // Down
                 if(!up && down) {
-
                     dy = 1 ;
                     dx = 0;
                 }
                 // Left
                 if(left && !right) {
-
                     dy = 0;
                     dx = -1;
                 }
@@ -185,7 +180,7 @@ public class Controller{
                     state = GameState.Running;
                     resume = false;
                 }
-                // Game started or restarted
+                // Game started
                 if(start && (state == GameState.Finished || state == GameState.Started)) {
                     restart();
                     start = false;
@@ -213,19 +208,19 @@ public class Controller{
     }
 
     private void update() {
-        board.updateFruit(); // updates the state of fruits
-        board.checkEaten(); // check if a fruit has been eaten
-        board.updateScore(); // update the score (pass it to scoreView class to show it on screen)
-        if(board.checkCollision() == GameState.Finished) { // check if a collision occurred to end the game
+        board.updateFruit();
+        board.checkEaten();
+        board.updateScore();
+        if(board.checkCollision() == GameState.Finished) {
             state = GameState.Finished;
         }
 
         // setting snake speed
         if(speedConstraint > 2 && board.getScore() >= speedPointsConstraint)
-            speedConstraint = 2; 		   //snake will move faster
+            speedConstraint = 2;
         if((speedConstraint == 2) && (board.getScore() - speedPointsConstraint) >= 10) {
             speedPointsConstraint += 30;
-            speedConstraint = 3; 	   	  // back to original speed
+            speedConstraint = 3;
         }
     }
 
