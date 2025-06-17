@@ -1,143 +1,114 @@
 package com.maggioli.snake.Model;
 
+import com.maggioli.snake.Controller.dto.GameConfig;
+
 import java.util.ArrayList;
 import java.util.Random;
 
-import com.maggioli.snake.Controller.Controller;
-import com.maggioli.snake.View.MainView;
-import com.maggioli.snake.View.ScoreView;
-
 public class Board {
-
-    private static final int BWIDTH = MainView.WIDTH/GameObject.SIZE;
-    private static final int BHEIGHT = MainView.HEIGHT/GameObject.SIZE;
     private final ArrayList<Fruit> fruits;
     private int score, highScore;
     private final Snake snake;
-    private final SnakePart head;
-    Random rand;
-    private final ScoreView scoreView;
+    private final Random rand;
 
     public Board() {
-        scoreView = new ScoreView();
         fruits = new ArrayList<>();
         score = 0;
         snake = new Snake();
         rand = new Random();
-        head = snake.getHead();
     }
 
-    public GameState checkCollision() {
-        int headX, headY, helpX, helpY;
-        headX = head.getX();
-        headY = head.getY();
+    public boolean checkCollision() {
+        SnakePart head = snake.getHead();
+        int headX = head.getX();
+        int headY = head.getY();
+
+        // Check for collision with the body
         for(int i = 1; i < snake.getSize(); ++i) {
+            int bodyX = snake.getSnakePart(i).getX();
+            int bodyY = snake.getSnakePart(i).getY();
 
-            helpX = snake.getSnakePart(i).getX();
-            helpY = snake.getSnakePart(i).getY();
-
-            if(helpX == headX && helpY == headY) {
-                highScore = score;
+            if(bodyX == headX && bodyY == headY) {
+                highScore = Math.max(highScore, score);
                 reset();
-                return GameState.Finished;
+                return true;
             }
         }
-        return Controller.getState();
+        return false;
     }
-    
-    public void checkEaten() {
-        int headX, headY, foodX, foodY;
-        headX = head.getX();
-        headY = head.getY();
-        for(int i = 0; i < fruits.size(); ++i){
 
-            foodX = fruits.get(i).getX();
-            foodY = fruits.get(i).getY();
+    public void checkEaten() {
+        int headX = snake.getHead().getX();
+        int headY = snake.getHead().getY();
+
+        for(int i = 0; i < fruits.size(); ++i) {
+            int foodX = fruits.get(i).getX();
+            int foodY = fruits.get(i).getY();
 
             if(foodX == headX && foodY == headY) {
                 removeFruit(i);
-                addLength();
+                snake.grow();
                 ++score;
+                break;
             }
         }
     }
-    
+
     public void updateFruit() {
-        int foodX, foodY;
-        int []place;
-
-        if(fruits.isEmpty()) { // if there are no fruits on the board
-
-            do {
-                place = placeFruit();
-                foodX = place[0];
-                foodY = place[1];
-            }while(foodX == 0 && foodY == 0);
-
-            addFruit(foodX, foodY);
+        if(fruits.isEmpty()) {
+            int[] place = placeFruit();
+            if(place[0] != 0 || place[1] != 0) {
+                addFruit(place[0], place[1]);
+            }
         }
     }
 
     private int[] placeFruit() {
+        int[] point = new int[2];
+        int gridWidth = GameConfig.WIDTH / GameConfig.CELL_SIZE;
+        int gridHeight = GameConfig.HEIGHT / GameConfig.CELL_SIZE;
 
-        int []point = new int[2];
-        int helpX, helpY, foodX, foodY;
+        int foodX, foodY;
+        boolean validPosition;
 
-        foodX = (rand.nextInt(BWIDTH) * GameObject.SIZE) + GameObject.SIZE / 2;
-        foodY = (rand.nextInt(BHEIGHT) * GameObject.SIZE) + GameObject.SIZE / 2;
+        do {
+            validPosition = true;
+            foodX = (rand.nextInt(gridWidth) * GameConfig.CELL_SIZE) + GameConfig.CELL_SIZE / 2;
+            foodY = (rand.nextInt(gridHeight) * GameConfig.CELL_SIZE) + GameConfig.CELL_SIZE / 2;
 
-        for (int i = 0; i < snake.getSize(); ++i) {
-
-            helpX = snake.getSnakePart(i).getX();
-            helpY = snake.getSnakePart(i).getY();
-
-            if (helpX == foodX && helpY == foodY) {
-                break;
+            // Avoid to place food on the snake
+            for (int i = 0; i < snake.getSize(); ++i) {
+                if (snake.getSnakePart(i).getX() == foodX && snake.getSnakePart(i).getY() == foodY) {
+                    validPosition = false;
+                    break;
+                }
             }
-        }
+        } while (!validPosition);
         point[0] = foodX;
         point[1] = foodY;
         return point;
     }
-    
+
     public void addFruit(int foodX, int foodY) {
         fruits.add(new Fruit(foodX, foodY));
     }
-    
+
     public void removeFruit(int i) {
         fruits.remove(i);
     }
 
-    public void updateScore() {
-        scoreView.addScore(score);
-    }
-    
-    public void addLength() {
-        SnakePart b1 = snake.getSnakePart(snake.getSize()-1), b2 = snake.getSnakePart(snake.getSize()-2);
-        if(b1.getX() > b2.getX())
-            snake.addSnakePart(b1.getX()+GameObject.SIZE, b1.getY());
-        else if(b1.getX() < b2.getX())
-            snake.addSnakePart(b1.getX()-GameObject.SIZE, b1.getY());
-        else if(b1.getY() >= b2.getY())
-            snake.addSnakePart(b1.getX(), b1.getY()+GameObject.SIZE);
-    }
-
-    private void reset() {
+    public void reset() {
         snake.setStart();
         fruits.clear();
         score = 0;
     }
 
-    public ArrayList<Fruit> getFruits(){
+    public ArrayList<Fruit> getFruits() {
         return fruits;
     }
 
     public Snake getSnake() {
         return snake;
-    }
-
-    public ScoreView getScoreView() {
-        return scoreView;
     }
 
     public int getScore() {

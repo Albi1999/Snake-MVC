@@ -4,21 +4,15 @@ import com.maggioli.snake.Controller.Controller;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-public class Main extends Application{
-
+public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
-
-        Controller setUpGame = new Controller();
-
-        primaryStage = setUpGame.getStage();
-
-        primaryStage.setResizable(false);
-
+        Controller gameController = new Controller();
+        primaryStage = gameController.getStage();
         primaryStage.show();
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         launch(args);
     }
 }

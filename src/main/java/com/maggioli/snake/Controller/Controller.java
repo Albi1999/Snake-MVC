@@ -1,243 +1,175 @@
 package com.maggioli.snake.Controller;
 
+import com.maggioli.snake.Controller.dto.GameViewData;
+import com.maggioli.snake.Controller.dto.PositionData;
 import com.maggioli.snake.Model.*;
 import com.maggioli.snake.View.MainView;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 
-public class Controller{
+import java.util.ArrayList;
+import java.util.List;
 
-    protected static GameState state;
-    private boolean up, down, right, left, pause, resume, start;
+public class Controller {
+    private GameState currentState;
+    private final Board gameBoard;
+    private final Movement movement;
+    private final MainView gameView;
+    private int frameCounter;
     private boolean keyActive;
-    private int dx, dy;
-    private int speedConstraint;
-    private int speedPointsConstraint;
-    private final Snake snake;
-    private final SnakePart head;
-    private final MainView view;
-    private final Board board;
 
     public Controller() {
-        state = GameState.Started;
-        up = down = right = left = pause = resume = start = false;
-        view = new MainView();
-        snake = view.getSnake();
-        head = snake.getHead();
-        board = view.getBoard();
+        currentState = GameState.Started;
+        gameBoard = new Board();
+        movement = new Movement();
+        gameView = new MainView(this);
         keyActive = true;
-        resume();
+        frameCounter = 0;
+
+        setupInputHandling();
+        startGameLoop();
     }
-    
-    private void movement(Scene scene) {
+
+    private void setupInputHandling() {
+        Scene scene = gameView.getScene();
 
         scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case UP:
-                    if (!down && keyActive && state == GameState.Running) {
-                        up = true;
-                        left = false;
-                        right = false;
-                        keyActive = false;
-                    }
-                    break;
-                case DOWN:
-                    if (!up && keyActive && (left || right) && state == GameState.Running) {
-                        down = true;
-                        left = false;
-                        right = false;
-                        keyActive = false;
-                    }
-                    break;
-                case LEFT:
-                    if (!right && keyActive && state == GameState.Running) {
-                        left = true;
-                        up = false;
-                        down = false;
-                        keyActive = false;
-                    }
-                    break;
-                case RIGHT:
-                    if (!left && keyActive && state == GameState.Running) {
-                        right = true;
-                        up = false;
-                        down = false;
-                        keyActive = false;
-                    }
-                    break;
-                case SPACE: // pause or resume game
-                    if (state == GameState.Running || state == GameState.Paused) {
-                        if (!pause) {
-                            pause = true;
-                            resume = false;
-                        } else {
-                            resume = true;
-                            pause = false;
-                            resume();
-                        }
-                    }
-                    break;
-                case ENTER: {
-                    if (state == GameState.Started)
-                        start = true;
-                    if (state == GameState.Finished) {
-                        start = true;
-                        resume();
-                    }
+            if (e.getCode() == KeyCode.ESCAPE) {
+                System.exit(0);
+                return;
+            }
+
+            if (currentState == GameState.Running) {
+                handleRunningInput(e.getCode());
+            } else if (currentState == GameState.Paused) {
+                if (e.getCode() == KeyCode.SPACE) {
+                    resumeGame();
+                }
+            } else if (currentState == GameState.Started || currentState == GameState.Finished) {
+                if (e.getCode() == KeyCode.ENTER) {
+                    startGame();
+                }
+            }
+        });
+    }
+
+    private void handleRunningInput(KeyCode code) {
+        if (!keyActive) {
+            return;
+        }
+
+        switch (code) {
+            case UP:
+                movement.requestDirection(Direction.UP);
+                keyActive = false;
+                break;
+            case DOWN:
+                if (movement.getCurrentDirection() == Direction.LEFT ||
+                        movement.getCurrentDirection() == Direction.RIGHT) {
+                    movement.requestDirection(Direction.DOWN);
+                    keyActive = false;
                 }
                 break;
-                case ESCAPE:
-                    System.exit(0);
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        scene.setOnKeyReleased(_ -> {
-        });
-    }
-    
-    private void move(int dx, int dy) {
-
-        if(dx != 0 || dy != 0) {
-
-            SnakePart prev = new SnakePart(head.getX(), head.getY()), next = new SnakePart(head.getX(), head.getY());
-
-            head.setX(head.getX()+(dx*GameObject.SIZE));
-
-            // Case when head goes too right or left on the screen
-            if(head.getX() > MainView.WIDTH) {
-                head.setX(GameObject.SIZE/2);
-            }
-            else if(head.getX() < 0) {
-                head.setX(MainView.WIDTH - GameObject.SIZE/2);
-            }
-
-            head.setY(head.getY()+(dy*GameObject.SIZE));
-
-            // Case when head goes too high or too low on the screen
-            if(head.getY() > MainView.HEIGHT) {
-                if ((head.getX() != GameObject.SIZE / 2 && head.getX() != MainView.HEIGHT - GameObject.SIZE / 2) || head.getY() != MainView.HEIGHT + GameObject.SIZE / 2) {
-                    head.setY(GameObject.SIZE/2);
-                }
-            }
-            else if(head.getY() < 0) {
-                head.setY(MainView.HEIGHT - GameObject.SIZE/2);
-            }
-
-            for(int i = 1; i < snake.getSize(); ++i) {
-
-                next.setX( snake.getSnakePart(i).getX());
-                next.setY( snake.getSnakePart(i).getY());
-
-                snake.getSnakePart(i).setX(prev.getX());
-                snake.getSnakePart(i).setY(prev.getY());
-                prev.setX(next.getX());
-                prev.setY(next.getY());
-            }
+            case LEFT:
+                movement.requestDirection(Direction.LEFT);
+                keyActive = false;
+                break;
+            case RIGHT:
+                movement.requestDirection(Direction.RIGHT);
+                keyActive = false;
+                break;
+            case SPACE:
+                pauseGame();
+                break;
+            default:
+                break;
         }
     }
 
-    private void resume(){
-
-        new AnimationTimer(){
-
-            int i=0;
+    private void startGameLoop() {
+        new AnimationTimer() {
             @Override
             public void handle(long now) {
+                if (currentState == GameState.Running) {
+                    frameCounter++;
 
-                // Up
-                if(up && !down) {
-                    dy = -1;
-                    dx = 0;
-                }
-                // Down
-                if(!up && down) {
-                    dy = 1 ;
-                    dx = 0;
-                }
-                // Left
-                if(left && !right) {
-                    dy = 0;
-                    dx = -1;
-                }
-                // Right
-                if(right && !left) {
-                    dy = 0;
-                    dx = 1;
-                }
-                // Game paused
-                if(pause && !resume) {
-                    state = GameState.Paused;
-                    view.render();
-                    stop();
-                }
-                // Game resumed
-                if(resume && !pause) {
-                    state = GameState.Running;
-                    resume = false;
-                }
-                // Game started
-                if(start && (state == GameState.Finished || state == GameState.Started)) {
-                    restart();
-                    start = false;
-                }
-                // Game finished
-                if(state == GameState.Finished) {
-                    stop();
-                }
-                // Game running
-                if(state == GameState.Running) {
-                    if(i==speedConstraint) {
-                        move(dx, dy);
+                    if (frameCounter >= movement.getSpeed()) {
+                        movement.updateDirection();
+                        movement.moveSnake(gameBoard.getSnake());
                         keyActive = true;
-                        i=0;
+                        frameCounter = 0;
+
+                        updateGameState();
                     }
-                    ++i;
                 }
 
-                update();
-                view.render();
-                movement(view.getScene());
+                renderGame();
             }
         }.start();
-
     }
 
-    private void update() {
-        board.updateFruit();
-        board.checkEaten();
-        board.updateScore();
-        if(board.checkCollision() == GameState.Finished) {
-            state = GameState.Finished;
+    private void updateGameState() {
+        gameBoard.updateFruit();
+        gameBoard.checkEaten();
+
+        if (gameBoard.checkCollision()) {
+            currentState = GameState.Finished;
         }
 
-        // setting snake speed
-        if(speedConstraint > 2 && board.getScore() >= speedPointsConstraint)
-            speedConstraint = 2;
-        if((speedConstraint == 2) && (board.getScore() - speedPointsConstraint) >= 10) {
-            speedPointsConstraint += 30;
-            speedConstraint = 3;
+        movement.updateSpeed(gameBoard.getScore());
+    }
+
+    public void startGame() {
+        gameBoard.reset();
+        movement.reset();
+        currentState = GameState.Running;
+    }
+
+    public void pauseGame() {
+        currentState = GameState.Paused;
+    }
+
+    public void resumeGame() {
+        currentState = GameState.Running;
+    }
+
+    private void renderGame() {
+        GameViewData viewData = prepareViewData();
+        gameView.render(viewData);
+    }
+
+    private GameViewData prepareViewData() {
+        Snake snake = gameBoard.getSnake();
+        List<PositionData> snakePositions = new ArrayList<>();
+
+        for (int i = 1; i < snake.getSize(); i++) {
+            SnakePart part = snake.getSnakePart(i);
+            snakePositions.add(new PositionData(part.getX(), part.getY()));
         }
-    }
+        PositionData headPosition = new PositionData(snake.getHead().getX(), snake.getHead().getY());
+        List<PositionData> fruitPositions = new ArrayList<>();
+        for (Fruit fruit : gameBoard.getFruits()) {
+            fruitPositions.add(new PositionData(fruit.getX(), fruit.getY()));
+        }
 
-
-    private void restart() {
-        state = GameState.Running;
-        dx = dy = 0;
-        up = down = left = right = false;
-        speedConstraint = 3;
-        speedPointsConstraint = 50;
-    }
-
-    public static GameState getState() {
-        return state;
+        return new GameViewData(
+                currentState,
+                headPosition,
+                snakePositions,
+                fruitPositions,
+                gameBoard.getScore(),
+                gameBoard.getHighScore()
+        );
     }
 
     public Stage getStage() {
-        return view.getStage();
+        return gameView.getStage();
+    }
+
+    public int getHighScore() {
+        return gameBoard.getHighScore();
     }
 }
