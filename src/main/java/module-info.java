@@ -21,5 +21,7 @@ module com.maggioli.snake {
     opens com.maggioli.snake.View to javafx.fxml;
     exports com.maggioli.snake.Controller.dto;
     opens com.maggioli.snake.Controller.dto to javafx.fxml;
+    exports com.maggioli.snake.Controller.interfaces;
+    opens com.maggioli.snake.Controller.interfaces to javafx.fxml;
 
 }

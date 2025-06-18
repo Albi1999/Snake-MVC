@@ -2,7 +2,6 @@ package com.maggioli.snake.Model;
 
 public abstract class GameObject {
 
-    public static final int SIZE = 20;
     protected int X, Y;
 
     public GameObject(int x, int y){

@@ -1,10 +1,13 @@
 package com.maggioli.snake.View;
 
-import com.maggioli.snake.Controller.Controller;
 import com.maggioli.snake.Controller.dto.GameData;
 import com.maggioli.snake.Controller.dto.PositionData;
 import com.maggioli.snake.Controller.dto.GameConfig;
 
+import com.maggioli.snake.Controller.interfaces.FrameCallback;
+import com.maggioli.snake.Controller.interfaces.InputHandler;
+
+import javafx.animation.AnimationTimer;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
@@ -17,16 +20,16 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class MainView {
+public class MainView implements GameView {
     private final Scene scene;
     private final Stage stage;
     private final Pane canvas;
     private final GridPane grid;
     private final ScoreView scoreView;
     private Group rootGroup;
+    private InputHandler inputHandler;
 
-    public MainView(Controller controller) {
-
+    public MainView() {
         stage = new Stage();
         stage.setTitle("Snake Game");
 
@@ -45,6 +48,27 @@ public class MainView {
         stage.setResizable(false);
     }
 
+    @Override
+    public void initialize(InputHandler inputHandler) {
+        this.inputHandler = inputHandler;
+        setupInputHandling();
+    }
+
+    private void setupInputHandling() {
+        scene.setOnKeyPressed(e -> inputHandler.handleKeyCode(e.getCode().toString()));
+    }
+
+    @Override
+    public void startRenderLoop(FrameCallback callback) {
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                callback.onFrame();
+            }
+        }.start();
+    }
+
+    @Override
     public void render(GameData viewData) {
         switch(viewData.state()) {
             case Started:

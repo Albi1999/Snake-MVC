@@ -1,6 +1,7 @@
 package com.maggioli.snake.View;
 
 import com.maggioli.snake.Controller.dto.GameConfig;
+
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Polygon;

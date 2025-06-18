@@ -2,22 +2,23 @@ package com.maggioli.snake.Controller;
 
 import com.maggioli.snake.Controller.dto.GameData;
 import com.maggioli.snake.Controller.dto.PositionData;
-import com.maggioli.snake.Model.*;
-import com.maggioli.snake.View.MainView;
 
-import javafx.animation.AnimationTimer;
-import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
+import com.maggioli.snake.Controller.interfaces.FrameCallback;
+import com.maggioli.snake.Controller.interfaces.InputHandler;
+
+import com.maggioli.snake.Model.*;
+
+import com.maggioli.snake.View.GameView;
+import com.maggioli.snake.View.MainView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Controller {
+public class Controller implements InputHandler, FrameCallback {
     private GameState currentState;
     private final Board gameBoard;
     private final Movement movement;
-    private final MainView gameView;
+    private final GameView gameView = new MainView();
     private int frameCounter;
     private boolean keyActive;
 
@@ -25,63 +26,58 @@ public class Controller {
         currentState = GameState.Started;
         gameBoard = new Board();
         movement = new Movement();
-        gameView = new MainView(this);
         keyActive = true;
         frameCounter = 0;
-
-        setupInputHandling();
-        startGameLoop();
+        gameView.initialize(this);
+        gameView.startRenderLoop(this);
     }
 
-    private void setupInputHandling() {
-        Scene scene = gameView.getScene();
+    @Override
+    public void handleKeyCode(String keyCode) {
+        if ("ESCAPE".equals(keyCode)) {
+            System.exit(0);
+            return;
+        }
 
-        scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-                System.exit(0);
-                return;
+        if (currentState == GameState.Running) {
+            handleRunningInput(keyCode);
+        } else if (currentState == GameState.Paused) {
+            if ("SPACE".equals(keyCode)) {
+                resumeGame();
             }
-
-            if (currentState == GameState.Running) {
-                handleRunningInput(e.getCode());
-            } else if (currentState == GameState.Paused) {
-                if (e.getCode() == KeyCode.SPACE) {
-                    resumeGame();
-                }
-            } else if (currentState == GameState.Started || currentState == GameState.Finished) {
-                if (e.getCode() == KeyCode.ENTER) {
-                    startGame();
-                }
+        } else if (currentState == GameState.Started || currentState == GameState.Finished) {
+            if ("ENTER".equals(keyCode)) {
+                startGame();
             }
-        });
+        }
     }
 
-    private void handleRunningInput(KeyCode code) {
+    private void handleRunningInput(String keyCode) {
         if (!keyActive) {
             return;
         }
 
-        switch (code) {
-            case UP:
+        switch (keyCode) {
+            case "UP":
                 movement.requestDirection(Direction.UP);
                 keyActive = false;
                 break;
-            case DOWN:
+            case "DOWN":
                 if (movement.getCurrentDirection() == Direction.LEFT ||
                         movement.getCurrentDirection() == Direction.RIGHT) {
                     movement.requestDirection(Direction.DOWN);
                     keyActive = false;
                 }
                 break;
-            case LEFT:
+            case "LEFT":
                 movement.requestDirection(Direction.LEFT);
                 keyActive = false;
                 break;
-            case RIGHT:
+            case "RIGHT":
                 movement.requestDirection(Direction.RIGHT);
                 keyActive = false;
                 break;
-            case SPACE:
+            case "SPACE":
                 pauseGame();
                 break;
             default:
@@ -89,26 +85,22 @@ public class Controller {
         }
     }
 
-    private void startGameLoop() {
-        new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                if (currentState == GameState.Running) {
-                    frameCounter++;
+    @Override
+    public void onFrame() {
+        if (currentState == GameState.Running) {
+            frameCounter++;
 
-                    if (frameCounter >= movement.getSpeed()) {
-                        movement.updateDirection();
-                        movement.moveSnake(gameBoard.getSnake());
-                        keyActive = true;
-                        frameCounter = 0;
+            if (frameCounter >= movement.getSpeed()) {
+                movement.updateDirection();
+                movement.moveSnake(gameBoard.getSnake());
+                keyActive = true;
+                frameCounter = 0;
 
-                        updateGameState();
-                    }
-                }
-
-                renderGame();
+                updateGameState();
             }
-        }.start();
+        }
+
+        renderGame();
     }
 
     private void updateGameState() {
@@ -165,7 +157,7 @@ public class Controller {
         );
     }
 
-    public Stage getStage() {
-        return gameView.getStage();
+    public GameView getGameView() {
+        return gameView;
     }
 }
