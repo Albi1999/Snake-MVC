@@ -1,6 +1,6 @@
 package com.maggioli.snake.Controller;
 
-import com.maggioli.snake.Controller.dto.GameViewData;
+import com.maggioli.snake.Controller.dto.GameData;
 import com.maggioli.snake.Controller.dto.PositionData;
 import com.maggioli.snake.Model.*;
 import com.maggioli.snake.View.MainView;
@@ -137,11 +137,11 @@ public class Controller {
     }
 
     private void renderGame() {
-        GameViewData viewData = prepareViewData();
+        GameData viewData = prepareViewData();
         gameView.render(viewData);
     }
 
-    private GameViewData prepareViewData() {
+    private GameData prepareViewData() {
         Snake snake = gameBoard.getSnake();
         List<PositionData> snakePositions = new ArrayList<>();
 
@@ -155,7 +155,7 @@ public class Controller {
             fruitPositions.add(new PositionData(fruit.getX(), fruit.getY()));
         }
 
-        return new GameViewData(
+        return new GameData(
                 currentState,
                 headPosition,
                 snakePositions,
@@ -167,9 +167,5 @@ public class Controller {
 
     public Stage getStage() {
         return gameView.getStage();
-    }
-
-    public int getHighScore() {
-        return gameBoard.getHighScore();
     }
 }

@@ -1,7 +1,7 @@
 package com.maggioli.snake.View;
 
 import com.maggioli.snake.Controller.Controller;
-import com.maggioli.snake.Controller.dto.GameViewData;
+import com.maggioli.snake.Controller.dto.GameData;
 import com.maggioli.snake.Controller.dto.PositionData;
 import com.maggioli.snake.Controller.dto.GameConfig;
 
@@ -45,8 +45,8 @@ public class MainView {
         stage.setResizable(false);
     }
 
-    public void render(GameViewData viewData) {
-        switch(viewData.getState()) {
+    public void render(GameData viewData) {
+        switch(viewData.state()) {
             case Started:
                 renderStartScreen();
                 break;
@@ -57,7 +57,7 @@ public class MainView {
                 renderPauseScreen();
                 break;
             case Finished:
-                renderGameOverScreen(viewData.getHighScore());
+                renderGameOverScreen(viewData.highScore());
                 break;
         }
     }
@@ -76,25 +76,25 @@ public class MainView {
         scene.setRoot(rootGroup);
     }
 
-    private void renderRunningGame(GameViewData viewData) {
+    private void renderRunningGame(GameData viewData) {
         grid.getChildren().clear();
         canvas.getChildren().clear();
         StackPane scoreStack = scoreView.getStack();
 
         // Snake Head
         Circle headCircle = new Circle(
-                viewData.getHeadPosition().getX(),
-                viewData.getHeadPosition().getY(),
+                viewData.headPosition().x(),
+                viewData.headPosition().y(),
                 (double) GameConfig.CELL_SIZE /2
         );
         headCircle.setFill(ColorView.SNAKE_HEAD_COLOR);
         canvas.getChildren().add(headCircle);
 
         // Snake Body
-        for(PositionData position : viewData.getSnakePositions()) {
+        for(PositionData position : viewData.snakePositions()) {
             Circle bodyPart = new Circle(
-                    position.getX(),
-                    position.getY(),
+                    position.x(),
+                    position.y(),
                     (double) GameConfig.CELL_SIZE /2
             );
             bodyPart.setFill(ColorView.SNAKE_BODY_COLOR);
@@ -102,17 +102,17 @@ public class MainView {
         }
 
         // Fruits
-        for(PositionData position : viewData.getFruitPositions()) {
+        for(PositionData position : viewData.fruitPositions()) {
             Circle fruitCircle = new Circle(
-                    position.getX(),
-                    position.getY(),
+                    position.x(),
+                    position.y(),
                     (double) GameConfig.CELL_SIZE / 2
             );
             fruitCircle.setFill(ColorView.FRUIT_COLOR);
             canvas.getChildren().add(fruitCircle);
         }
 
-        scoreView.updateScore(viewData.getScore());
+        scoreView.updateScore(viewData.score());
 
         grid.add(scoreStack, 0, 1);
         grid.add(canvas, 0, 0);
